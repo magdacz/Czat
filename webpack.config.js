@@ -1,25 +1,32 @@
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const OptimizeJsPlugin = require('optimize-js-plugin');
+const   path = require('path'),
+        webpack = require('webpack'),
+        UglifyJSPlugin = require('uglifyjs-webpack-plugin'),
+        HtmlWebpackPlugin = require('html-webpack-plugin'),
+        OptimizeJSPlugin = require('optimize-js-plugin');
+//enviroment variable
+let env = process.env.NODE_ENV || 'development';
 
-const plugins = [new HtmlWebpackPlugin({
-    template: 'src/index.html',
-    filename: 'index.html',
-    inject: 'body'
-})];
+//plugins configuration
+const plugins = [
+        new HtmlWebpackPlugin({
+        template: 'client/index.html',
+        filename: 'index.html',
+        inject: 'body'
+    })];
 
-
-module.exports = (env) => {
-    if (env !== 'production') {
+    if (env === 'production') {
         plugins.push(
-            new OptimizeJsPlugin({
+            new webpack.optimize.UglifyJsPlugin(),
+            new OptimizeJSPlugin({
                 sourceMap: false
             })
         )
     }
-    
-    return {
-        mode: env || 'production',
+
+
+
+//webpack.config.js
+module.exports =  {
         entry: (env !== 'production' ? [
             'react-hot-loader/patch',
             'webpack-dev-server/client?http://localhost:8080',
@@ -29,31 +36,25 @@ module.exports = (env) => {
             filename: './bundle.js',
             path: path.resolve(__dirname, 'public'),
         },
-    module: {
-        rules: [
-            {
-            test: /\.js$/,
-            loader: "babel-loader",
-            options: {
-                plugins: env !== 'production' ? ["react-hot-loader/babel"] : []
-                }
-            },
-            {
-            test: /\.css$/,
-            use: [
-                { loader: 'style-loader'},
+        module: {
+            rules: [
                 {
-                    loader: 'css-loader',
-                    options: {
-                        modules: true
-                    }
+                    test: /\.js$/,
+                    loader: "babel-loader"
+                },
+                {
+                    test: /\.css$/,
+                    use: [
+                        { loader: 'style-loader'},
+                        {
+                            loader: 'css-loader',
+                            options: {
+                                modules: true
+                            }
+                        }
+                    ]
                 }
             ]
-        }
-    ]
-},
-  plugins
-   
-}
-        
+        },
+        plugins: plugins
 };
